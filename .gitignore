@@ -1,0 +1,7 @@
+dist/
+third_party/
+*.o
+*.elf
+*.img
+*.hdd
+*.log
