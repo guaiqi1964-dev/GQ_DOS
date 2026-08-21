@@ -77,6 +77,11 @@ void console_putc(char c) {
         g_cx = 0;
     } else if (c == '\t') {
         g_cx = (g_cx + 8) & ~7u;
+    } else if (c == '\b') {
+        if (g_cx > 0) {
+            g_cx--;
+            draw_glyph(' ');
+        }
     } else if ((uint8_t)c >= 0x20 && (uint8_t)c < 0x7f) {
         draw_glyph(c);
         g_cx++;

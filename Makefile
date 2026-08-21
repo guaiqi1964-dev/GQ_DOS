@@ -5,6 +5,7 @@ export MSYS2_ARG_CONV_EXCL := *
 
 CROSS := D:/msys64/opt/cross/bin/x86_64-elf
 CC    := $(CROSS)-gcc
+NASM  := D:/msys64/usr/bin/nasm
 
 QEMU      := D:/msys64/mingw64/bin/qemu-system-x86_64
 MFORMAT   := D:/msys64/mingw64/bin/mformat
@@ -23,7 +24,8 @@ CFLAGS := -g -O2 -std=gnu11 -ffreestanding -fno-stack-protector -fno-stack-check
 LDFLAGS := -nostdlib -static -Wl,-z,max-page-size=0x1000 -Wl,--gc-sections -Wl,--build-id=none -lgcc
 
 SRCS   := $(wildcard src/kernel/*.c)
-OBJS   := $(patsubst %.c,%.o,$(SRCS))
+ASMS   := $(wildcard src/kernel/*.asm)
+OBJS   := $(patsubst %.c,%.o,$(SRCS)) $(patsubst %.asm,%.o,$(ASMS))
 
 KERNEL := dist/kernel
 IMAGE  := dist/gqdos.img
@@ -39,6 +41,9 @@ $(KERNEL): $(OBJS) linker.ld
 src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+src/%.o: src/%.asm
+	$(NASM) -f elf64 $< -o $@
+
 # 超软盘方案：整盘 FAT32（无分区表），OVMF 按可移动介质路径引导
 $(IMAGE): $(KERNEL) limine.conf
 	mkdir -p dist
@@ -52,7 +57,7 @@ $(IMAGE): $(KERNEL) limine.conf
 run: $(IMAGE)
 	mkdir -p dist
 	cp -f $(OVMF_VARS) dist/ovmf_vars.fd
-	$(QEMU) -m 512M \
+	$(QEMU) -m 512M -cpu qemu64,+x2apic \
 		-drive if=pflash,format=raw,unit=0,file=$(OVMF_CODE),readonly=on \
 		-drive if=pflash,format=raw,unit=1,file=dist/ovmf_vars.fd \
 		-drive format=raw,file=$(IMAGE),if=ide \
