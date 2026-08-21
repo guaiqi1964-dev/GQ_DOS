@@ -19,11 +19,11 @@ CFLAGS := -g -O2 -std=gnu11 -ffreestanding -fno-stack-protector -fno-stack-check
 	-fno-pic -fno-pie -fno-lto -m64 -march=x86-64 -mabi=sysv \
 	-mno-80387 -mno-mmx -mno-sse -mno-sse2 -mno-red-zone -mcmodel=kernel \
 	-ffunction-sections -fdata-sections -Wall -Wextra \
-	-Iinclude -Isrc/kernel -Isrc/font
+	-Iinclude -Isrc/kernel -Isrc/font -Isrc/fs -Isrc/libc
 
 LDFLAGS := -nostdlib -static -Wl,-z,max-page-size=0x1000 -Wl,--gc-sections -Wl,--build-id=none -lgcc
 
-SRCS   := $(wildcard src/kernel/*.c)
+SRCS   := $(wildcard src/kernel/*.c) $(wildcard src/fs/*.c) $(wildcard src/libc/*.c)
 ASMS   := $(wildcard src/kernel/*.asm)
 OBJS   := $(patsubst %.c,%.o,$(SRCS)) $(patsubst %.asm,%.o,$(ASMS))
 
@@ -53,6 +53,7 @@ $(IMAGE): $(KERNEL) limine.conf
 	$(MCOPY) -i $@ $(KERNEL) ::/boot/kernel
 	$(MCOPY) -i $@ limine.conf ::/boot/limine/limine.conf
 	$(MCOPY) -i $@ $(LIMINE)/BOOTX64.EFI ::/EFI/BOOT/BOOTX64.EFI
+	$(MCOPY) -i $@ hello.txt ::/HELLO.TXT
 
 run: $(IMAGE)
 	mkdir -p dist
