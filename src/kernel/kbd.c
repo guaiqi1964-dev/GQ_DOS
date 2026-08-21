@@ -75,7 +75,10 @@ int kbd_has_char(void) {
 }
 
 char kbd_getc(void) {
-    while (g_head == g_tail) { }
+    while (g_head == g_tail) {
+        __asm__ volatile("hlt");
+        kbd_poll();
+    }
     char c = g_buf[g_head];
     g_head = (g_head + 1) % BUF_SIZE;
     return c;
