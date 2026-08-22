@@ -19,7 +19,10 @@ static uint32_t make_color(uint8_t r, uint8_t g, uint8_t b) {
          | ((uint32_t)b << g_b_shift);
 }
 
-void console_init(struct limine_framebuffer *fb) {
+int console_init(struct limine_framebuffer *fb) {
+    /* 格式校验：代码以 uint32_t 和 pitch/4 访问显存，仅支持 32bpp */
+    if (fb->bpp != 32) return -1;
+
     g_fb = fb;
     g_width = (uint32_t)fb->width;
     g_height = (uint32_t)fb->height;
@@ -33,6 +36,7 @@ void console_init(struct limine_framebuffer *fb) {
     g_cx = 0;
     g_cy = 0;
     console_clear(g_bg);
+    return 0;
 }
 
 void console_clear(uint32_t color) {

@@ -47,8 +47,18 @@ void kmain(void) {
     }
 
     struct limine_framebuffer *fb = fb_req.response->framebuffers[0];
-    console_init(fb);
     serial_init();
+    serial_puts("[fb ");
+    serial_print_num(fb->bpp);
+    serial_puts("bpp ");
+    serial_print_num(fb->width);
+    serial_puts("x");
+    serial_print_num(fb->height);
+    serial_puts("]\n");
+    if (console_init(fb) != 0) {
+        serial_puts("[console_init FAIL]\n");
+        hcf();
+    }
 
     printf("========================================\n");
     printf("           GQ_DOS v0.4\n");

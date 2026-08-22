@@ -23,11 +23,14 @@ static void print_unsigned(uint64_t v, uint32_t base, bool upper) {
 }
 
 static void print_signed(int64_t v) {
+    uint64_t u;
     if (v < 0) {
         console_putc('-');
-        v = -v;
+        u = (uint64_t)(-(v + 1)) + 1;  /* 避免 INT64_MIN 取负溢出 (UB) */
+    } else {
+        u = (uint64_t)v;
     }
-    print_unsigned((uint64_t)v, 10, false);
+    print_unsigned(u, 10, false);
 }
 
 int printf(const char *fmt, ...) {
@@ -42,6 +45,7 @@ int printf(const char *fmt, ...) {
         p++;
         int is_long = 0;
         while (*p == 'l') { is_long++; p++; }
+        if (*p == '\0') break;  /* 格式串以 % 结尾，防止越界读 */
 
         switch (*p) {
         case '%':
